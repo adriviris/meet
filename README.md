@@ -36,3 +36,7 @@ Then a shortcut to the app should appear on the home screen
 Given the user is on the event details page
 When they choose to view charts
 Then the system should display visualizations for event details
+
+For this app, serverless functions will be used to handle various functionalities such as user authentication, event notifications, and event recommendations.
+
+When a user logs in or searches for events, serverless functions can authenticate them, query databases for relevant events, and send notifications based on user preferences—all without managing underlying infrastructure. This approach ensures scalability to handle varying user loads, cost-effectiveness by only paying for executed functions, and simplified development, allowing the team to focus on delivering a seamless event discovery experience for users.
