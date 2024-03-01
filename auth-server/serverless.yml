@@ -21,8 +21,14 @@ service: auth-server
 frameworkVersion: "3"
 
 provider:
-  name: aws
-  runtime: nodejs18.x
+name: aws
+  runtime: nodejs12.x
+  region: eu-central-1
+  timeout: 30 # optional, in seconds, default is 6
+  environment:
+    CLIENT_ID: ${file(config.json):929622384093-josl6b3q90esrtfg08cs3rpu6hjahcgp.apps.googleusercontent.com}
+    CLIENT_SECRET: ${file(config.json):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}
+    CALENDAR_ID: ${file(config.json):fullstackwebdev@careerfoundry.com}
 
 # you can overwrite defaults here
 #  stage: dev
@@ -59,8 +65,14 @@ provider:
 #    - include-me-dir/**
 
 functions:
-  hello:
-    handler: handler.hello
+  getAuthURL:
+    handler: handler.getAuthURL
+    events:
+      - http:
+          path: api/get-auth-url
+          method: get
+#  hello:
+#    handler: handler.hello
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
