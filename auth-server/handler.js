@@ -5,8 +5,7 @@ const calendar = google.calendar("v3");
 const SCOPES = ["https://www.googleapis.com/auth/calendar.events.public.readonly"];
 const { CLIENT_SECRET, CLIENT_ID, CALENDAR_ID } = process.env;
 const redirect_uris = [
-  // "https://YOUR_GITHUB_USERNAME.github.io/meet/"
-  "rococo-smakager-360550.netlify.app/meet/"
+  "https://rococo-smakager-360550.netlify.app/meet/"
 ];
 
 const oAuth2Client = new google.auth.OAuth2(
@@ -16,8 +15,6 @@ const oAuth2Client = new google.auth.OAuth2(
 );
 
 module.exports.getAuthURL = async () => {
-  /**
-   */
   const authUrl = oAuth2Client.generateAuthUrl({
     access_type: "offline",
     scope: SCOPES,
@@ -36,15 +33,9 @@ module.exports.getAuthURL = async () => {
 };
 
 module.exports.getAccessToken = async (event) => {
-  // Decode authorization code extracted from the URL query
   const code = decodeURIComponent(`${event.pathParameters.code}`);
 
   return new Promise((resolve, reject) => {
-    /**
-     *  Exchange authorization code for access token with a “callback” after the exchange,
-     *  The callback in this case is an arrow function with the results as parameters: “error” and “response”
-     */
-
     oAuth2Client.getToken(code, (error, response) => {
       if (error) {
         return reject(error);
@@ -53,7 +44,6 @@ module.exports.getAccessToken = async (event) => {
     });
   })
     .then((results) => {
-      // Respond with OAuth token 
       return {
         statusCode: 200,
         headers: {
@@ -64,7 +54,50 @@ module.exports.getAccessToken = async (event) => {
       };
     })
     .catch((error) => {
-      // Handle error
+      return {
+        statusCode: 500,
+        body: JSON.stringify(error),
+      };
+    });
+};
+
+module.exports.getCalendarEvents = async (event) => {
+  // Declare the access_token variable and get the token from the event path parameters
+  const accessToken = event.pathParameters.access_token;
+
+  // Set the access token as credentials in oAuth2Client
+  oAuth2Client.setCredentials({
+    access_token: accessToken
+  });
+
+  return new Promise((resolve, reject) => {
+    calendar.events.list(
+      {
+        calendarId: CALENDAR_ID,
+        auth: oAuth2Client,
+        maxResults: 10, 
+        singleEvents: true,
+        orderBy: "startTime",
+      },
+      (error, response) => {
+        if (error) {
+          return reject(error);
+        }
+        return resolve(response.data);
+      }
+    );
+  })
+    .then((events) => {
+      return {
+        statusCode: 200,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
+        body: JSON.stringify(events),
+      };
+    })
+    .catch((error) => {
       return {
         statusCode: 500,
         body: JSON.stringify(error),
