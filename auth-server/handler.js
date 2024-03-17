@@ -71,33 +71,37 @@ module.exports.getCalendarEvents = async (event) => {
   });
 
   return new Promise((resolve, reject) => {
+    // Use asynchronous logic to fetch events from Google Calendar
     calendar.events.list(
       {
         calendarId: CALENDAR_ID,
         auth: oAuth2Client,
-        maxResults: 10, 
+        timeMin: new Date().toISOString(),
         singleEvents: true,
         orderBy: "startTime",
       },
       (error, response) => {
         if (error) {
-          return reject(error);
+          reject(error);
+        } else {
+          resolve(response);
         }
-        return resolve(response.data);
       }
     );
   })
-    .then((events) => {
+    .then((results) => {
+      // Return events in the specified format
       return {
         statusCode: 200,
         headers: {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Credentials': true,
         },
-        body: JSON.stringify(events),
+        body: JSON.stringify({ events: results.data.items }),
       };
     })
     .catch((error) => {
+      // Handle error if the promise is rejected
       return {
         statusCode: 500,
         body: JSON.stringify(error),
